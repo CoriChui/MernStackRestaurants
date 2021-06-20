@@ -1,0 +1,43 @@
+version: '3.7'
+services:
+  mongodb:
+    image: mongo
+    container_name: mongo
+    ports:
+      - 27017:27017
+  
+  mongo_seed:
+    build: ./
+    container_name: mongo-seed
+    depends_on:
+      - mongodb
+    volumes:
+      - mongodb:/data/db
+
+  server:
+    build: ./backend
+    container_name: server
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+      - mail
+    env_file: ./backend/config/.env
+
+  client:
+    build: ./frontend
+    container_name: client
+    command: npm start
+    depends_on:
+      - server
+    ports:
+      - "3000:3000"
+
+  mail:
+    image: djfarrelly/maildev
+    container_name: "mail"
+    ports:
+      - "1080:80"
+
+volumes:
+  mongodb:
